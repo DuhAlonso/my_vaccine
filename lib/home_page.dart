@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:my_vaccine/drawer.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -15,6 +16,7 @@ class _HomePageState extends State<HomePage> {
   bool oneShot = false;
   bool defCheck = false;
   bool comoCheck = false;
+  bool indCheck = false;
   bool twoShot = false;
   DateTime? selectedDate;
   bool isKids = false;
@@ -36,105 +38,116 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  _toCheck() {
-    int age = int.parse(_ageController.text);
+  _validator() {
+    setState(() {
+      _msg = 'Insira sua idade';
+    });
+  }
 
-    if (age >= 12 && oneShot) {
-      setState(() {
-        _msg = 'Você já pode tomar a 1º Dose ';
-      });
-    } else if (oneShot == false &&
-        (_manufacturer == null || selectedDate == null)) {
-      setState(() {
-        _msg = 'Selecione os itens faltando';
-      });
-    } else if (age >= 12 &&
-        age < 18 &&
-        selectedDate != null &&
-        _manufacturer != null) {
-      if (age > 11 && age < 18) {
+  _toCheck() {
+    if (_ageController.text.isEmpty) {
+      _validator();
+    } else {
+      int age = int.parse(_ageController.text);
+
+      if (age >= 12 && oneShot) {
+        setState(() {
+          _msg = 'Você já pode tomar a 1º Dose ';
+        });
+      } else if (oneShot == false &&
+          (_manufacturer == null || selectedDate == null)) {
+        setState(() {
+          _msg = 'Selecione os itens faltando';
+        });
+      } else if (age >= 12 &&
+          age < 18 &&
+          selectedDate != null &&
+          _manufacturer != null) {
+        if (age > 11 && age < 18) {
+          var today = DateTime.now();
+          int diferrence = today.difference(selectedDate!).inDays;
+          if (diferrence >= 21 && twoShot == false && oneShot == false) {
+            setState(() {
+              _msg = 'Você já pode tomar a Segunda Dose';
+            });
+          } else if (twoShot == true) {
+            setState(() {
+              _msg = 'Você ainda não pode tomar a Dose Adicional';
+            });
+          } else {
+            setState(() {
+              _msg = 'Aguarde completar 28 dias';
+            });
+          }
+        } // fim do if dos Adolescentes
+
+      } else if (age >= 18) {
         var today = DateTime.now();
         int diferrence = today.difference(selectedDate!).inDays;
-        if (diferrence >= 21 && twoShot == false && oneShot == false) {
+        if (diferrence >= 120 && twoShot == true) {
           setState(() {
-            _msg = 'Você já pode tomar a Segunda Dose';
+            _msg = 'Você já pode tomar a Dose Adicional';
           });
-        } else if (twoShot == true) {
+        } else if (oneShot == false && twoShot == false) {
+          if (_manufacturer == 'Corona' && diferrence >= 15) {
+            setState(() {
+              _msg = 'Você já pode tomar a Segunda Dose';
+            });
+          } else if (_manufacturer == 'Astra' && diferrence >= 56) {
+            setState(() {
+              _msg = 'Você já pode tomar a Segunda Dose';
+            });
+          } else if (_manufacturer == 'Pfizer' && diferrence >= 21) {
+            setState(() {
+              _msg = 'Você já pode tomar a Segunda Dose';
+            });
+          } else if (_manufacturer == 'Janssen' && diferrence >= 60) {
+            setState(() {
+              _msg = 'Você já pode tomar a Segunda Dose';
+            });
+          } else if (_manufacturer == null) {
+            setState(() {
+              _msg = 'Selecione a vacina que você tomou na primeira Dose';
+            });
+          } else {
+            setState(() {
+              _msg = 'Você ainda não pode tomar a Segunda Dose';
+            });
+          }
+        } else {
           setState(() {
             _msg = 'Você ainda não pode tomar a Dose Adicional';
           });
-        } else {
+        }
+        // fim if adultos
+      } else if (age >= 5 && age < 12) {
+        if (oneShot) {
+          if (comoCheck == true || defCheck == true || indCheck == true) {
+            setState(() {
+              _msg = 'Você já pode tomar a 1º Dose';
+            });
+          } else {
+            setState(() {
+              _msg = 'Você ainda não pode tomar a 1º Dose';
+            });
+          }
+        } else if (oneShot == false && twoShot == false) {
           setState(() {
-            _msg = 'Aguarde completar 28 dias';
+            _msg = 'Ainda não pode tomar a 2º Dose';
           });
         }
-      } // fim do if dos Adolescentes
-
-    } else if (age >= 18) {
-      var today = DateTime.now();
-      int diferrence = today.difference(selectedDate!).inDays;
-      if (diferrence >= 120 && twoShot == true) {
+      } else if (age < 5) {
         setState(() {
-          _msg = 'Você já pode tomar a Dose Adicional';
-        });
-      } else if (oneShot == false && twoShot == false) {
-        if (_manufacturer == 'Corona' && diferrence >= 15) {
-          setState(() {
-            _msg = 'Você já pode tomar a Segunda Dose';
-          });
-        } else if (_manufacturer == 'Astra' && diferrence >= 56) {
-          setState(() {
-            _msg = 'Você já pode tomar a Segunda Dose';
-          });
-        } else if (_manufacturer == 'Pfizer' && diferrence >= 21) {
-          setState(() {
-            _msg = 'Você já pode tomar a Segunda Dose';
-          });
-        } else if (_manufacturer == 'Janssen' && diferrence >= 60) {
-          setState(() {
-            _msg = 'Você já pode tomar a Segunda Dose';
-          });
-        } else if (_manufacturer == null) {
-          setState(() {
-            _msg = 'Selecione a vacina que você tomou na primeira Dose';
-          });
-        } else {
-          setState(() {
-            _msg = 'Você ainda não pode tomar a Segunda Dose';
-          });
-        }
-      } else {
-        setState(() {
-          _msg = 'Você ainda não pode tomar a Dose Adiconal';
+          _msg = 'A vacina ainda não foi liberada para sua idade';
         });
       }
-      // fim if adultos
-    } else if (age >= 5 && age < 12) {
-      if (oneShot) {
-        if (comoCheck == true || defCheck == true) {
-          setState(() {
-            _msg = 'Você já pode tomar a 1º Dose';
-          });
-        } else {
-          setState(() {
-            _msg = 'Você ainda não pode tomar a 1º Dose';
-          });
-        }
-      } else if (oneShot == false && twoShot == false) {
-        setState(() {
-          _msg = 'Ainda não pode tomar a 2º Dose';
-        });
-      }
-    } else if (age < 5) {
-      setState(() {
-        _msg = 'A vacina ainda não foi liberada para sua idade';
-      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const DrawerMenu(),
       appBar: AppBar(
         title: const Text('Minha Vacina - Sampa'),
         centerTitle: true,
@@ -161,16 +174,24 @@ class _HomePageState extends State<HomePage> {
                     //autofocus: true,
                     controller: _ageController,
                     decoration: InputDecoration(
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(
-                          color: Colors.black,
+                        hintText: 'Digite sua idade',
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                          borderSide: const BorderSide(
+                            color: Colors.black,
+                          ),
                         ),
-                      ),
-                      label: const Text('Digite sua idade',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 18, color: Colors.black)),
-                    ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                          borderSide: const BorderSide(
+                            color: Colors.black,
+                          ),
+                        ),
+                        labelText: 'Idade',
+                        labelStyle: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.black,
+                        )),
                     onFieldSubmitted: (_) {
                       _toCheck();
                     },
@@ -228,6 +249,19 @@ class _HomePageState extends State<HomePage> {
                                   onChanged: (v) {
                                     setState(() {
                                       comoCheck = v!;
+                                    });
+                                  }),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text('População indígena?'),
+                              Checkbox(
+                                  value: indCheck,
+                                  onChanged: (v) {
+                                    setState(() {
+                                      indCheck = v!;
                                     });
                                   }),
                             ],
@@ -346,9 +380,12 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.symmetric(vertical: 15.0),
                 child: TextButton(
                   onPressed: _toCheck,
-                  child: const Text(
-                    'Verificar',
-                    style: TextStyle(color: Colors.white, fontSize: 15),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Text(
+                      'Verificar',
+                      style: TextStyle(color: Colors.white, fontSize: 15),
+                    ),
                   ),
                   style: TextButton.styleFrom(backgroundColor: Colors.blue),
                 ),
