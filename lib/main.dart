@@ -3,13 +3,13 @@ import 'package:my_vaccine/home_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
-  runApp(MaterialApp(
+  runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
     home: HomePage(),
-    localizationsDelegates: const [
+    localizationsDelegates: [
       GlobalMaterialLocalizations.delegate,
       GlobalWidgetsLocalizations.delegate
     ],
-    supportedLocales: const [Locale('pt'), Locale('br')],
+    supportedLocales: [Locale('pt'), Locale('br')],
   ));
 }

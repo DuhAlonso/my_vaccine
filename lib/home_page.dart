@@ -9,12 +9,15 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  TextEditingController _ageController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
   String? _manufacturer;
   String? _msg = '';
   bool oneShot = false;
+  bool defCheck = false;
+  bool comoCheck = false;
   bool twoShot = false;
   DateTime? selectedDate;
+  bool isKids = false;
 
   _showDataPicker() {
     showDatePicker(
@@ -40,20 +43,16 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _msg = 'Você já pode tomar a 1º Dose ';
       });
-    } else if (age == '') {
+    } else if (oneShot == false &&
+        (_manufacturer == null || selectedDate == null)) {
       setState(() {
-        _msg = 'Insira sua idade';
+        _msg = 'Selecione os itens faltando';
       });
-    } else if (_manufacturer == null) {
-      setState(() {
-        _msg = 'Selecione a vacina que você tomou na primeira Dose';
-      });
-    } else if (selectedDate == null) {
-      setState(() {
-        _msg = 'Selecione a data';
-      });
-    } else if (age >= 12 && selectedDate != null && _manufacturer != null) {
-      if (age < 18) {
+    } else if (age >= 12 &&
+        age < 18 &&
+        selectedDate != null &&
+        _manufacturer != null) {
+      if (age > 11 && age < 18) {
         var today = DateTime.now();
         int diferrence = today.difference(selectedDate!).inDays;
         if (diferrence >= 21 && twoShot == false && oneShot == false) {
@@ -70,41 +69,66 @@ class _HomePageState extends State<HomePage> {
           });
         }
       } // fim do if dos Adolescentes
-      else if (age >= 18) {
-        var today = DateTime.now();
-        int diferrence = today.difference(selectedDate!).inDays;
-        if (diferrence >= 120 && twoShot == true) {
+
+    } else if (age >= 18) {
+      var today = DateTime.now();
+      int diferrence = today.difference(selectedDate!).inDays;
+      if (diferrence >= 120 && twoShot == true) {
+        setState(() {
+          _msg = 'Você já pode tomar a Dose Adicional';
+        });
+      } else if (oneShot == false && twoShot == false) {
+        if (_manufacturer == 'Corona' && diferrence >= 15) {
           setState(() {
-            _msg = 'Você já pode tomar a Dose Adicional';
+            _msg = 'Você já pode tomar a Segunda Dose';
           });
-        } else if (oneShot == false && twoShot == false) {
-          if (_manufacturer == 'Corona' && diferrence >= 15) {
-            setState(() {
-              _msg = 'Você já pode tomar a Segunda Dose';
-            });
-          } else if (_manufacturer == 'Astra' && diferrence >= 56) {
-            setState(() {
-              _msg = 'Você já pode tomar a Segunda Dose';
-            });
-          } else if (_manufacturer == 'Pfizer' && diferrence >= 21) {
-            setState(() {
-              _msg = 'Você já pode tomar a Segunda Dose';
-            });
-          } else if (_manufacturer == 'Janssen' && diferrence >= 60) {
-            setState(() {
-              _msg = 'Você já pode tomar a Segunda Dose';
-            });
-          } else if (_manufacturer == null) {
-            setState(() {
-              _msg = 'Selecione a vacina que você tomou na primeira Dose';
-            });
-          } else {
-            setState(() {
-              _msg = 'Você ainda não pode tomar a Segunda Dose';
-            });
-          }
+        } else if (_manufacturer == 'Astra' && diferrence >= 56) {
+          setState(() {
+            _msg = 'Você já pode tomar a Segunda Dose';
+          });
+        } else if (_manufacturer == 'Pfizer' && diferrence >= 21) {
+          setState(() {
+            _msg = 'Você já pode tomar a Segunda Dose';
+          });
+        } else if (_manufacturer == 'Janssen' && diferrence >= 60) {
+          setState(() {
+            _msg = 'Você já pode tomar a Segunda Dose';
+          });
+        } else if (_manufacturer == null) {
+          setState(() {
+            _msg = 'Selecione a vacina que você tomou na primeira Dose';
+          });
+        } else {
+          setState(() {
+            _msg = 'Você ainda não pode tomar a Segunda Dose';
+          });
         }
+      } else {
+        setState(() {
+          _msg = 'Você ainda não pode tomar a Dose Adiconal';
+        });
       }
+      // fim if adultos
+    } else if (age >= 5 && age < 12) {
+      if (oneShot) {
+        if (comoCheck == true || defCheck == true) {
+          setState(() {
+            _msg = 'Você já pode tomar a 1º Dose';
+          });
+        } else {
+          setState(() {
+            _msg = 'Você ainda não pode tomar a 1º Dose';
+          });
+        }
+      } else if (oneShot == false && twoShot == false) {
+        setState(() {
+          _msg = 'Ainda não pode tomar a 2º Dose';
+        });
+      }
+    } else if (age < 5) {
+      setState(() {
+        _msg = 'A vacina ainda não foi liberada para sua idade';
+      });
     }
   }
 
@@ -112,114 +136,234 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Minha Vacina'),
+        title: const Text('Minha Vacina - Sampa'),
+        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(15.0),
-        child: Column(
-          children: [
-            Text(
-                'Preencha as informações para saber se você já pode tomar a vacina '),
-            TextFormField(
-              controller: _ageController,
-              decoration: InputDecoration(label: Text('Insira sua idade')),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('É a primeira Dose?'),
-                Switch(
-                    value: oneShot,
-                    onChanged: (value) {
-                      setState(() {
-                        oneShot = value;
-                        twoShot = false;
-                        _msg = '';
-                      });
-                    }),
-                Text('Tomou a 2º Dose?'),
-                Switch(
-                    value: twoShot,
-                    onChanged: (value) {
-                      setState(() {
-                        oneShot = false;
-                        twoShot = value;
-                        _msg = '';
-                      });
-                    }),
-              ],
-            ),
-            oneShot
-                ? Container()
-                : SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        Radio(
-                            value: 'Corona',
-                            groupValue: _manufacturer,
-                            onChanged: (String? manufacturer) {
-                              setState(() {
-                                _manufacturer = manufacturer;
-                              });
-                              print(manufacturer);
-                            }),
-                        const Text('CoronaVac, Butantan'),
-                        Radio(
-                            value: 'Astra',
-                            groupValue: _manufacturer,
-                            onChanged: (String? manufacturer) {
-                              setState(() {
-                                _manufacturer = manufacturer;
-                              });
-                              print(manufacturer);
-                            }),
-                        const Text('Oxford, AstraZeneca'),
-                        Radio(
-                            value: 'Pfizer',
-                            groupValue: _manufacturer,
-                            onChanged: (String? manufacturer) {
-                              setState(() {
-                                _manufacturer = manufacturer;
-                              });
-                              print(manufacturer);
-                            }),
-                        const Text('Vacina BioNTech, Pfizer'),
-                        Radio(
-                            value: 'Janssen',
-                            groupValue: _manufacturer,
-                            onChanged: (String? manufacturer) {
-                              setState(() {
-                                _manufacturer = manufacturer;
-                              });
-                            }),
-                        const Text('Janssen Johnson & Johnson'),
-                      ],
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const Text(
+                'Preencha as informações para saber se você já pode tomar a vacina.',
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: SizedBox(
+                  width: 150,
+                  child: TextFormField(
+                    textAlign: TextAlign.center,
+                    cursorColor: Colors.black,
+                    //autofocus: true,
+                    controller: _ageController,
+                    decoration: InputDecoration(
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: const BorderSide(
+                          color: Colors.black,
+                        ),
+                      ),
+                      label: const Text('Digite sua idade',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 18, color: Colors.black)),
                     ),
+                    onFieldSubmitted: (_) {
+                      _toCheck();
+                    },
                   ),
-            oneShot
-                ? Container()
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      twoShot
-                          ? Text('Data da segunda dose')
-                          : Text('Data da primeira dose'),
-                      TextButton(
-                        onPressed: _showDataPicker,
-                        child: selectedDate == null
-                            ? Text('Selecionar Data')
-                            : Text(
-                                DateFormat('dd/MM/y')
-                                    .format(selectedDate!)
-                                    .toString(),
-                              ),
-                      )
-                    ],
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('É a primeira Dose?'),
+                  Switch(
+                      value: oneShot,
+                      onChanged: (value) {
+                        setState(() {
+                          oneShot = value;
+                          twoShot = false;
+                          _msg = '';
+                        });
+                      }),
+                  const Text('Tomou a 2º Dose?'),
+                  Switch(
+                      value: twoShot,
+                      onChanged: (value) {
+                        setState(() {
+                          oneShot = false;
+                          twoShot = value;
+                          _msg = '';
+                        });
+                      }),
+                ],
+              ),
+              oneShot
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 15.0),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Você possui alguma:',
+                            textAlign: TextAlign.center,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text('Comorbidade'),
+                              Checkbox(
+                                  value: defCheck,
+                                  onChanged: (v) {
+                                    setState(() {
+                                      defCheck = v!;
+                                    });
+                                  }),
+                              const Text('Deficiência permanaemte'),
+                              Checkbox(
+                                  value: comoCheck,
+                                  onChanged: (v) {
+                                    setState(() {
+                                      comoCheck = v!;
+                                    });
+                                  }),
+                            ],
+                          ),
+                        ],
+                      ),
+                    )
+                  : Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10.0),
+                          border: Border.all(width: 1, color: Colors.black)),
+                      height: 130,
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: ListView(
+                              children: [
+                                twoShot
+                                    ? const Text(
+                                        'Escolha a vacina que tomou na 2º dose',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                        textAlign: TextAlign.center,
+                                      )
+                                    : const Text(
+                                        'Escolha a vacina que tomou na 1º dose',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                RadioListTile(
+                                    title: const Text('CoronaVac, Butantan'),
+                                    value: 'Corona',
+                                    groupValue: _manufacturer,
+                                    onChanged: (String? manufacturer) {
+                                      setState(() {
+                                        _manufacturer = manufacturer;
+                                      });
+                                    }),
+                                RadioListTile(
+                                    title: const Text('Oxford, AstraZeneca'),
+                                    value: 'Astra',
+                                    groupValue: _manufacturer,
+                                    onChanged: (String? manufacturer) {
+                                      setState(() {
+                                        _manufacturer = manufacturer;
+                                      });
+                                    }),
+                                RadioListTile(
+                                    title: const Text('BioNTech, Pfizer'),
+                                    value: 'Pfizer',
+                                    groupValue: _manufacturer,
+                                    onChanged: (String? manufacturer) {
+                                      setState(() {
+                                        _manufacturer = manufacturer;
+                                      });
+                                    }),
+                                RadioListTile(
+                                    title:
+                                        const Text('Janssen Johnson & Johnson'),
+                                    value: 'Janssen',
+                                    groupValue: _manufacturer,
+                                    onChanged: (String? manufacturer) {
+                                      setState(() {
+                                        _manufacturer = manufacturer;
+                                      });
+                                    }),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+              oneShot
+                  ? Container()
+                  : Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 15.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          twoShot
+                              ? const Text(
+                                  'Data da segunda dose',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600),
+                                )
+                              : const Text(
+                                  'Data da primeira dose',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                          TextButton(
+                            onPressed: _showDataPicker,
+                            child: selectedDate == null
+                                ? const Text('Selecionar Data',
+                                    style: TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold))
+                                : Text(
+                                    DateFormat('dd/MM/y')
+                                        .format(selectedDate!)
+                                        .toString(),
+                                    style: const TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold)),
+                          )
+                        ],
+                      ),
+                    ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 15.0),
+                child: TextButton(
+                  onPressed: _toCheck,
+                  child: const Text(
+                    'Verificar',
+                    style: TextStyle(color: Colors.white, fontSize: 15),
                   ),
-            TextButton(onPressed: _toCheck, child: Text('Verificar')),
-            Text(_msg!),
-          ],
+                  style: TextButton.styleFrom(backgroundColor: Colors.blue),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 15.0),
+                child: Text(
+                  _msg!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
