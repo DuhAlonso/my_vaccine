@@ -50,7 +50,7 @@ class _HomePageState extends State<HomePage> {
     } else {
       int age = int.parse(_ageController.text);
 
-      if (age >= 12 && oneShot) {
+      if (age >= 5 && oneShot) {
         setState(() {
           _msg = 'Você já pode tomar a 1º Dose ';
         });
@@ -120,26 +120,30 @@ class _HomePageState extends State<HomePage> {
           });
         }
         // fim if adultos
-      } else if (age >= 5 && age < 12) {
-        if (oneShot) {
-          if (comoCheck == true || defCheck == true || indCheck == true) {
-            setState(() {
-              _msg = 'Você já pode tomar a 1º Dose';
-            });
-          } else {
-            setState(() {
-              _msg = 'Você ainda não pode tomar a 1º Dose';
-            });
-          }
-        } else if (oneShot == false && twoShot == false) {
-          setState(() {
-            _msg = 'Ainda não pode tomar a 2º Dose';
-          });
-        }
       } else if (age < 5) {
         setState(() {
           _msg = 'A vacina ainda não foi liberada para sua idade';
         });
+      } else if (age > 4 && age < 12 && oneShot == false) {
+        var today = DateTime.now();
+        int diferrence = today.difference(selectedDate!).inDays;
+        if (_manufacturer == 'PfizerKids' && diferrence >= 56) {
+          setState(() {
+            _msg = 'Você já pode tomar a Segunda Dose';
+          });
+        } else if (_manufacturer == 'CoronaKids' && diferrence >= 28) {
+          setState(() {
+            _msg = 'Você já pode tomar a Segunda Dose';
+          });
+        } else if (twoShot == true) {
+          setState(() {
+            _msg = 'Você ainda não pode tomar a Dose Adicional';
+          });
+        } else {
+          setState(() {
+            _msg = 'Você ainda não pode tomar a 2º Dose';
+          });
+        }
       }
     }
   }
@@ -295,6 +299,24 @@ class _HomePageState extends State<HomePage> {
                                             fontWeight: FontWeight.bold),
                                         textAlign: TextAlign.center,
                                       ),
+                                RadioListTile(
+                                    title: const Text('Pfizer Pediátrica'),
+                                    value: 'PfizerKids',
+                                    groupValue: _manufacturer,
+                                    onChanged: (String? manufacturer) {
+                                      setState(() {
+                                        _manufacturer = manufacturer;
+                                      });
+                                    }),
+                                RadioListTile(
+                                    title: const Text('CoronaVac Pediátrica'),
+                                    value: 'CoronaKids',
+                                    groupValue: _manufacturer,
+                                    onChanged: (String? manufacturer) {
+                                      setState(() {
+                                        _manufacturer = manufacturer;
+                                      });
+                                    }),
                                 RadioListTile(
                                     title: const Text('CoronaVac, Butantan'),
                                     value: 'Corona',

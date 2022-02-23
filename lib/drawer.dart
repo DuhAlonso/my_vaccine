@@ -24,7 +24,7 @@ class DrawerMenu extends StatelessWidget {
             title: const Text('Instrutivo SP - Site Prefeitura'),
             onTap: () {
               launch(
-                  'https://www.prefeitura.sp.gov.br/cidade/secretarias/saude/vigilancia_em_saude/doencas_e_agravos/coronavirus/index.php?p=323901');
+                  'https://www.prefeitura.sp.gov.br/cidade/secretarias/saude/vigilancia_em_saude/index.php?p=307599');
             },
           ),
           ListTile(
